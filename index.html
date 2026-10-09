@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNS Micro Project - Hash Demo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #6366f1;
+    --primary-dark: #4338ca;
+    --violet: #8b5cf6;
+    --pink: #ec4899;
+    --cyan: #06b6d4;
+    --danger: #dc2626;
+    --success: #059669;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+  }
+
+  html, body { overflow-x: hidden; }
+
+  body {
+    font-family: "Times New Roman", Times, serif;
+    background: #0a0e27;
+    min-height: 100vh;
+    color: var(--text);
+    padding-bottom: 40px;
+    position: relative;
+  }
+
+  /* ---------- Animated background ---------- */
+  .bg {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: linear-gradient(125deg,
+      #0a0e27 0%,
+      #1a0b3d 25%,
+      #1e1b4b 50%,
+      #1e3a8a 75%,
+      #0a0e27 100%);
+    background-size: 400% 400%;
+    animation: bgMove 18s ease-in-out infinite;
+  }
+
+  @keyframes bgMove {
+    0%,100% { background-position: 0% 0%; }
+    50%     { background-position: 100% 100%; }
+  }
+
+  .orbs {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.55;
+    animation: float 18s ease-in-out infinite;
+  }
+
+  .orb.o1 { width: 380px; height: 380px; background: #6366f1; top: -80px; left: -80px; animation-delay: 0s; }
+  .orb.o2 { width: 320px; height: 320px; background: #8b5cf6; top: 40%; right: -100px; animation-delay: 4s; }
+  .orb.o3 { width: 260px; height: 260px; background: #ec4899; bottom: -80px; left: 30%; animation-delay: 8s; }
+  .orb.o4 { width: 220px; height: 220px; background: #06b6d4; top: 10%; left: 55%; animation-delay: 12s; }
+
+  @keyframes float {
+    0%,100% { transform: translate(0, 0) scale(1); }
+    33%     { transform: translate(40px, -50px) scale(1.1); }
+    66%     { transform: translate(-30px, 30px) scale(0.95); }
+  }
+
+  .particles {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .dot {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #c7d2fe;
+    border-radius: 50%;
+    opacity: 0.6;
+    animation: rise linear infinite;
+  }
+
+  @keyframes rise {
+    from { transform: translateY(100vh); opacity: 0; }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.6; }
+    to   { transform: translateY(-20vh); opacity: 0; }
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    text-align: center;
+    padding: 50px 20px 32px;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+  }
+
+  header h1 {
+    font-size: 34px;
+    letter-spacing: 0.5px;
+    line-height: 1.25;
+    max-width: 900px;
+    margin: 0 auto;
+    background: linear-gradient(90deg,
+      #ffffff 0%,
+      #c7d2fe 25%,
+      #a78bfa 50%,
+      #c7d2fe 75%,
+      #ffffff 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 5s linear infinite, fadeUp 0.9s ease-out;
+    text-shadow: 0 4px 30px rgba(139, 92, 246, 0.35);
+  }
+
+  @keyframes shine { to { background-position: 200% center; } }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .pulse-line {
+    width: 120px;
+    height: 3px;
+    margin: 18px auto 0;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #6366f1, #ec4899, #06b6d4, #6366f1);
+    background-size: 200% auto;
+    animation: shine 3s linear infinite;
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 1s ease-out 0.15s both;
+  }
+
+  .tab {
+    padding: 13px 28px;
+    background: rgba(255,255,255,0.06);
+    color: #c7d2fe;
+    border: 1px solid rgba(199, 210, 254, 0.18);
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 15px;
+    font-family: inherit;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.3px;
+  }
+
+  .tab::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+    opacity: 0;
+    transition: opacity 0.35s;
+    z-index: -1;
+  }
+
+  .tab::after {
+    content: '';
+    position: absolute;
+    top: var(--y, 50%);
+    left: var(--x, 50%);
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(255,255,255,0.35), transparent 65%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+    pointer-events: none;
+  }
+
+  .tab:hover {
+    color: #fff;
+    border-color: rgba(199, 210, 254, 0.6);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(99, 102, 241, 0.35);
+  }
+
+  .tab:hover::after {
+    width: 400px;
+    height: 400px;
+  }
+
+  .tab.active {
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 12px 30px rgba(139, 92, 246, 0.55);
+    transform: translateY(-3px);
+  }
+
+  .tab.active::before { opacity: 1; }
+
+  /* ---------- Card ---------- */
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border-radius: 18px;
+    padding: 32px 36px;
+    box-shadow:
+      0 24px 70px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255,255,255,0.05);
+    animation: cardIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899, #06b6d4, #6366f1);
+    background-size: 300% 100%;
+    animation: stripMove 4s linear infinite;
+  }
+
+  @keyframes stripMove { to { background-position: 300% 0; } }
+
+  .card h2 {
+    font-size: 24px;
+    color: var(--primary-dark);
+    margin-bottom: 10px;
+    letter-spacing: 0.2px;
+    animation: fadeUp 0.5s ease-out;
+  }
+
+  .hint {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+    animation: fadeUp 0.5s ease-out 0.05s both;
+  }
+
+  label {
+    display: block;
+    font-weight: bold;
+    margin-top: 18px;
+    margin-bottom: 7px;
+    font-size: 14px;
+    color: #374151;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 13px 16px;
+    font-size: 15px;
+    font-family: inherit;
+    border: 2px solid var(--border);
+    border-radius: 11px;
+    background: #f9fafb;
+    transition: all 0.3s ease;
+  }
+
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
+    transform: translateY(-2px);
+  }
+
+  input[type="text"]:hover { border-color: #c7d2fe; }
+
+  /* ---------- Buttons ---------- */
+  .btn-row {
+    margin-top: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  button {
+    padding: 13px 26px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 11px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.3px;
+  }
+
+  button::after {
+    content: '';
+    position: absolute;
+    top: var(--y, 50%);
+    left: var(--x, 50%);
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(255,255,255,0.5), transparent 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+    pointer-events: none;
+  }
+
+  button:hover::after { width: 400px; height: 400px; }
+  button:active { transform: scale(0.96); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
+    box-shadow: 0 12px 28px rgba(99, 102, 241, 0.6);
+    transform: translateY(-3px);
+  }
+
+  .btn-secondary {
+    background: #eef2ff;
+    color: var(--primary-dark);
+    border: 2px solid #c7d2fe;
+  }
+
+  .btn-secondary:hover {
+    background: #e0e7ff;
+    border-color: #a5b4fc;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+  }
+
+  .btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(220, 38, 38, 0.45);
+  }
+
+  .btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    box-shadow: 0 12px 28px rgba(220, 38, 38, 0.6);
+    transform: translateY(-3px);
+  }
+
+  /* ---------- Result ---------- */
+  .result {
+    margin-top: 26px;
+    padding: 24px 26px;
+    background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+    border-radius: 14px;
+    border-left: 5px solid var(--primary);
+    animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.08), transparent);
+    animation: sweep 2.5s ease-out;
+  }
+
+  @keyframes sweep { to { left: 100%; } }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-24px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .result.danger {
+    border-left-color: var(--danger);
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  }
+
+  .result h3 {
+    font-size: 16px;
+    color: var(--primary-dark);
+    margin: 16px 0 8px;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .result h3::before {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background: linear-gradient(180deg, #6366f1, #ec4899);
+    border-radius: 2px;
+  }
+
+  .result h3:first-of-type { margin-top: 10px; }
+
+  .hash {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    word-break: break-all;
+    margin: 6px 0;
+    padding: 11px 14px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: #111827;
+    transition: all 0.25s;
+    animation: hashPop 0.45s ease-out backwards;
+    position: relative;
+  }
+
+  .hash:hover {
+    border-color: #a5b4fc;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    transform: translateX(4px);
+  }
+
+  .hash:nth-of-type(1) { animation-delay: 0.05s; }
+  .hash:nth-of-type(2) { animation-delay: 0.12s; }
+  .hash:nth-of-type(3) { animation-delay: 0.19s; }
+  .hash:nth-of-type(4) { animation-delay: 0.26s; }
+
+  @keyframes hashPop {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .row { margin: 9px 0; font-size: 14px; }
+
+  .badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 22px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    animation: badgePop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+  }
+
+  @keyframes badgePop {
+    from { transform: scale(0.3); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  .badge-bad {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12), 0 4px 12px rgba(220, 38, 38, 0.2);
+    animation: badgePop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
+               pulseBad 2s ease-in-out infinite 0.6s;
+  }
+
+  @keyframes pulseBad {
+    0%,100% { box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12), 0 4px 12px rgba(220, 38, 38, 0.2); }
+    50%     { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0.18), 0 6px 18px rgba(220, 38, 38, 0.35); }
+  }
+
+  .badge-ok {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: var(--success);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12), 0 4px 12px rgba(5, 150, 105, 0.15);
+  }
+
+  /* ---------- Loader ---------- */
+  .loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 26px;
+    color: var(--primary);
+    font-size: 15px;
+    animation: fadeIn 0.3s;
+  }
+
+  .spinner {
+    width: 26px;
+    height: 26px;
+    border: 3px solid #e0e7ff;
+    border-top-color: var(--primary);
+    border-right-color: var(--violet);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .hidden { display: none; }
+
+  .tab-content:not(.hidden) {
+    animation: cardIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .tab { padding: 10px 16px; font-size: 13px; }
+    .card { padding: 22px 20px; }
+    .btn-row button { flex: 1 1 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="orbs">
+  <div class="orb o1"></div>
+  <div class="orb o2"></div>
+  <div class="orb o3"></div>
+  <div class="orb o4"></div>
+</div>
+<div class="particles" id="particles"></div>
+
+<header>
+  <h1>Understanding Hash Functions through Collision Experiments</h1>
+  <div class="pulse-line"></div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-tab="tab1">Compare Two Inputs</div>
+  <div class="tab" data-tab="tab2">Hash Any Text</div>
+  <div class="tab" data-tab="tab3">Check Collision</div>
+</div>
+
+<main>
+
+  <!-- TAB 1 -->
+  <div class="card tab-content" id="tab1">
+    <h2>Compare Two Inputs (Avalanche Effect)</h2>
+    <p class="hint">Type any two strings. The tool shows their MD5 and SHA-256 hashes, how many characters changed, and whether a collision occurred.</p>
+
+    <label for="in1">Input 1</label>
+    <input type="text" id="in1" placeholder="Type anything here...">
+
+    <label for="in2">Input 2</label>
+    <input type="text" id="in2" placeholder="Type anything here...">
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="runCompare()">Generate Hashes</button>
+      <button class="btn-secondary" onclick="loadExample(1)">Load Example 1</button>
+      <button class="btn-secondary" onclick="loadExample(2)">Load Example 2</button>
+      <button class="btn-secondary" onclick="loadExample(3)">Load Example 3</button>
+    </div>
+
+    <div id="out1"></div>
+  </div>
+
+  <!-- TAB 2 -->
+  <div class="card tab-content hidden" id="tab2">
+    <h2>Hash Any Text with Four Algorithms</h2>
+    <p class="hint">Type any text and see its MD5, SHA-1, SHA-256, and SHA-512 hashes.</p>
+
+    <label for="in3">Enter Text</label>
+    <input type="text" id="in3" placeholder="Type anything here...">
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="runSingle()">Hash It</button>
+    </div>
+
+    <div id="out2"></div>
+  </div>
+
+  <!-- TAB 3 -->
+  <div class="card tab-content hidden" id="tab3">
+    <h2>Check Collision Between Two Inputs</h2>
+    <p class="hint">Type any two strings to check whether their MD5 or SHA-256 hashes collide. The red button also compares them against the known MD5 collision from Wang et al. 2004.</p>
+
+    <label for="in4">Input 1</label>
+    <input type="text" id="in4" placeholder="Type anything here...">
+
+    <label for="in5">Input 2</label>
+    <input type="text" id="in5" placeholder="Type anything here...">
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="runCollisionCheck()">Check Collision</button>
+      <button class="btn-danger" onclick="runKnownCollision()">Run Known MD5 Collision Demo</button>
+    </div>
+
+    <div id="out3"></div>
+  </div>
+
+</main>
+
+<script>
+/* =====================================================================
+   Particle generator
+   ===================================================================== */
+(function(){
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 40; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    d.style.left = Math.random() * 100 + '%';
+    d.style.animationDuration = (8 + Math.random() * 12) + 's';
+    d.style.animationDelay = (-Math.random() * 20) + 's';
+    d.style.opacity = 0.3 + Math.random() * 0.5;
+    container.appendChild(d);
+  }
+})();
+
+/* =====================================================================
+   Ripple effect
+   ===================================================================== */
+document.addEventListener('mousemove', e => {
+  const el = e.target.closest('.tab, button');
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  el.style.setProperty('--x', (e.clientX - rect.left) + 'px');
+  el.style.setProperty('--y', (e.clientY - rect.top) + 'px');
+});
+
+/* =====================================================================
+   MD5 - pure JavaScript (text version)
+   ===================================================================== */
+function md5(str){
+  function rotl(x,c){return (x<<c)|(x>>>(32-c));}
+  function add(a,b){return (a+b)|0;}
+  function toBytes(s){const u=unescape(encodeURIComponent(s));const b=[];for(let i=0;i<u.length;i++)b.push(u.charCodeAt(i));return b;}
+  function toHex(w){const h="0123456789abcdef";let o="";for(let i=0;i<w.length*4;i++){o+=h[(w[i>>2]>>((i%4)*8+4))&0xf];o+=h[(w[i>>2]>>((i%4)*8))&0xf];}return o;}
+  function cmn(q,a,b,x,s,t){a=add(add(a,q),add(x,t));return add(rotl(a,s),b);}
+  function ff(a,b,c,d,x,s,t){return cmn((b&c)|(~b&d),a,b,x,s,t);}
+  function gg(a,b,c,d,x,s,t){return cmn((b&d)|(c&~d),a,b,x,s,t);}
+  function hh(a,b,c,d,x,s,t){return cmn(b^c^d,a,b,x,s,t);}
+  function ii(a,b,c,d,x,s,t){return cmn(c^(b|~d),a,b,x,s,t);}
+  function cyc(x,k){
+    let a=x[0],b=x[1],c=x[2],d=x[3];
+    a=ff(a,b,c,d,k[0],7,-680876936);d=ff(d,a,b,c,k[1],12,-389564586);c=ff(c,d,a,b,k[2],17,606105819);b=ff(b,c,d,a,k[3],22,-1044525330);
+    a=ff(a,b,c,d,k[4],7,-176418897);d=ff(d,a,b,c,k[5],12,1200080426);c=ff(c,d,a,b,k[6],17,-1473231341);b=ff(b,c,d,a,k[7],22,-45705983);
+    a=ff(a,b,c,d,k[8],7,1770035416);d=ff(d,a,b,c,k[9],12,-1958414417);c=ff(c,d,a,b,k[10],17,-42063);b=ff(b,c,d,a,k[11],22,-1990404162);
+    a=ff(a,b,c,d,k[12],7,1804603682);d=ff(d,a,b,c,k[13],12,-40341101);c=ff(c,d,a,b,k[14],17,-1502002290);b=ff(b,c,d,a,k[15],22,1236535329);
+    a=gg(a,b,c,d,k[1],5,-165796510);d=gg(d,a,b,c,k[6],9,-1069501632);c=gg(c,d,a,b,k[11],14,643717713);b=gg(b,c,d,a,k[0],20,-373897302);
+    a=gg(a,b,c,d,k[5],5,-701558691);d=gg(d,a,b,c,k[10],9,38016083);c=gg(c,d,a,b,k[15],14,-660478335);b=gg(b,c,d,a,k[4],20,-405537848);
+    a=gg(a,b,c,d,k[9],5,568446438);d=gg(d,a,b,c,k[14],9,-1019803690);c=gg(c,d,a,b,k[3],14,-187363961);b=gg(b,c,d,a,k[8],20,1163531501);
+    a=gg(a,b,c,d,k[13],5,-1444681467);d=gg(d,a,b,c,k[2],9,-51403784);c=gg(c,d,a,b,k[7],14,1735328473);b=gg(b,c,d,a,k[12],20,-1926607734);
+    a=hh(a,b,c,d,k[5],4,-378558);d=hh(d,a,b,c,k[8],11,-2022574463);c=hh(c,d,a,b,k[11],16,1839030562);b=hh(b,c,d,a,k[14],23,-35309556);
+    a=hh(a,b,c,d,k[1],4,-1530992060);d=hh(d,a,b,c,k[4],11,1272893353);c=hh(c,d,a,b,k[7],16,-155497632);b=hh(b,c,d,a,k[10],23,-1094730640);
+    a=hh(a,b,c,d,k[13],4,681279174);d=hh(d,a,b,c,k[0],11,-358537222);c=hh(c,d,a,b,k[3],16,-722521979);b=hh(b,c,d,a,k[6],23,76029189);
+    a=hh(a,b,c,d,k[9],4,-640364487);d=hh(d,a,b,c,k[12],11,-421815835);c=hh(c,d,a,b,k[15],16,530742520);b=hh(b,c,d,a,k[2],23,-995338651);
+    a=ii(a,b,c,d,k[0],6,-198630844);d=ii(d,a,b,c,k[7],10,1126891415);c=ii(c,d,a,b,k[14],15,-1416354905);b=ii(b,c,d,a,k[5],21,-57434055);
+    a=ii(a,b,c,d,k[12],6,1700485571);d=ii(d,a,b,c,k[3],10,-1894986606);c=ii(c,d,a,b,k[10],15,-1051523);b=ii(b,c,d,a,k[1],21,-2054922799);
+    a=ii(a,b,c,d,k[8],6,1873313359);d=ii(d,a,b,c,k[15],10,-30611744);c=ii(c,d,a,b,k[6],15,-1560198380);b=ii(b,c,d,a,k[13],21,1309151649);
+    a=ii(a,b,c,d,k[4],6,-145523070);d=ii(d,a,b,c,k[11],10,-1120210379);c=ii(c,d,a,b,k[2],15,718787259);b=ii(b,c,d,a,k[9],21,-343485551);
+    x[0]=add(a,x[0]);x[1]=add(b,x[1]);x[2]=add(c,x[2]);x[3]=add(d,x[3]);
+  }
+  function blk(b){const r=[];for(let i=0;i<64;i+=4)r[i>>2]=b[i]+(b[i+1]<<8)+(b[i+2]<<16)+(b[i+3]<<24);return r;}
+  function main(bytes){
+    const n=bytes.length;
+    const s=[1732584193,-271733879,-1732584194,271733878];
+    let i;
+    for(i=64;i<=n;i+=64)cyc(s,blk(bytes.slice(i-64,i)));
+    const tail=new Array(16).fill(0);
+    const rest=bytes.slice(i-64);
+    for(let j=0;j<rest.length;j++)tail[j>>2]|=rest[j]<<((j%4)*8);
+    tail[rest.length>>2]|=0x80<<((rest.length%4)*8);
+    if(rest.length>55){cyc(s,tail);for(let j=0;j<16;j++)tail[j]=0;}
+    tail[14]=n*8;cyc(s,tail);return s;
+  }
+  return toHex(main(toBytes(str)));
+}
+
+/* =====================================================================
+   SHA-1, SHA-256, SHA-512
+   ===================================================================== */
+async function sha1hex(text){
+  const b=new TextEncoder().encode(text);
+  const buf=await crypto.subtle.digest('SHA-1',b);
+  return [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+async function sha256(text){
+  const b=new TextEncoder().encode(text);
+  const buf=await crypto.subtle.digest('SHA-256',b);
+  return [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+async function sha512hex(text){
+  const b=new TextEncoder().encode(text);
+  const buf=await crypto.subtle.digest('SHA-512',b);
+  return [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+/* =====================================================================
+   Helpers
+   ===================================================================== */
+function diffCount(a,b){let d=0;for(let i=0;i<a.length;i++)if(a[i]!==b[i])d++;return d;}
+function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function showLoader(el,msg){
+  el.innerHTML = `<div class="loader"><div class="spinner"></div> ${msg}</div>`;
+}
+
+/* =====================================================================
+   Tab switching
+   ===================================================================== */
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x => x.classList.add('hidden'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.tab).classList.remove('hidden');
+  });
+});
+
+/* =====================================================================
+   TAB 1
+   ===================================================================== */
+async function runCompare(){
+  const s1 = document.getElementById('in1').value;
+  const s2 = document.getElementById('in2').value;
+  const out = document.getElementById('out1');
+
+  if (s1 === '' || s2 === '') {
+    out.innerHTML = '<div class="result danger"><span class="badge badge-bad">Please enter both inputs.</span></div>';
+    return;
+  }
+
+  showLoader(out, 'Generating hashes...');
+  await new Promise(r => setTimeout(r, 350));
+
+  const m1 = md5(s1), m2 = md5(s2);
+  const h1 = await sha256(s1), h2 = await sha256(s2);
+
+  const cM = diffCount(m1, m2), cS = diffCount(h1, h2);
+  const pM = (cM / m1.length * 100).toFixed(1);
+  const pS = (cS / h1.length * 100).toFixed(1);
+
+  out.innerHTML = `
+    <div class="result">
+      <div class="row"><b>Input 1:</b> ${esc(s1)}</div>
+      <div class="row"><b>Input 2:</b> ${esc(s2)}</div>
+
+      <h3>MD5 (128 bits)</h3>
+      <div class="hash">Input 1: ${m1}</div>
+      <div class="hash">Input 2: ${m2}</div>
+      <div class="row">Differing hex chars: <b>${cM}/${m1.length}</b> (${pM}%)</div>
+      <div class="row">Collision: ${m1===m2 ? '<span class="badge badge-bad">YES — BROKEN</span>' : '<span class="badge badge-ok">No</span>'}</div>
+
+      <h3>SHA-256 (256 bits)</h3>
+      <div class="hash">Input 1: ${h1}</div>
+      <div class="hash">Input 2: ${h2}</div>
+      <div class="row">Differing hex chars: <b>${cS}/${h1.length}</b> (${pS}%)</div>
+      <div class="row">Collision: ${h1===h2 ? '<span class="badge badge-bad">YES — BROKEN</span>' : '<span class="badge badge-ok">No — secure</span>'}</div>
+    </div>
+  `;
+}
+
+function loadExample(n){
+  const pairs = {
+    1: ["Hello, World!", "Hello, World?"],
+    2: ["CNS Project", "cns project"],
+    3: ["The quick brown fox jumps over the lazy dog",
+        "The quick brown fox jumps over the lazy dog."]
+  };
+  document.getElementById('in1').value = pairs[n][0];
+  document.getElementById('in2').value = pairs[n][1];
+  runCompare();
+}
+
+/* =====================================================================
+   TAB 2
+   ===================================================================== */
+async function runSingle(){
+  const text = document.getElementById('in3').value;
+  const out = document.getElementById('out2');
+
+  if (text === '') {
+    out.innerHTML = '<div class="result danger"><span class="badge badge-bad">Please enter some text.</span></div>';
+    return;
+  }
+
+  showLoader(out, 'Hashing with four algorithms...');
+  await new Promise(r => setTimeout(r, 350));
+
+  const m  = md5(text);
+  const h1 = await sha1hex(text);
+  const h2 = await sha256(text);
+  const h5 = await sha512hex(text);
+
+  out.innerHTML = `
+    <div class="result">
+      <div class="row"><b>Input:</b> ${esc(text)}</div>
+
+      <h3>MD5 (128 bits)</h3>
+      <div class="hash">${m}</div>
+
+      <h3>SHA-1 (160 bits)</h3>
+      <div class="hash">${h1}</div>
+
+      <h3>SHA-256 (256 bits)</h3>
+      <div class="hash">${h2}</div>
+
+      <h3>SHA-512 (512 bits)</h3>
+      <div class="hash">${h5}</div>
+    </div>
+  `;
+}
+
+/* =====================================================================
+   TAB 3a - Check Collision (blue button) - user inputs only
+   ===================================================================== */
+async function runCollisionCheck(){
+  const s1 = document.getElementById('in4').value;
+  const s2 = document.getElementById('in5').value;
+  const out = document.getElementById('out3');
+
+  if (s1 === '' || s2 === '') {
+    out.innerHTML = '<div class="result danger"><span class="badge badge-bad">Please enter both inputs.</span></div>';
+    return;
+  }
+
+  showLoader(out, 'Checking for collision...');
+  await new Promise(r => setTimeout(r, 350));
+
+  const m1 = md5(s1), m2 = md5(s2);
+  const h1 = await sha256(s1), h2 = await sha256(s2);
+
+  const md5Coll = (m1 === m2);
+  const shaColl = (h1 === h2);
+
+  out.innerHTML = `
+    <div class="result">
+      <div class="row"><b>Input 1:</b> ${esc(s1)}</div>
+      <div class="row"><b>Input 2:</b> ${esc(s2)}</div>
+
+      <h3>MD5 (128 bits)</h3>
+      <div class="hash">Input 1: ${m1}</div>
+      <div class="hash">Input 2: ${m2}</div>
+      <div class="row">Collision: ${md5Coll ? '<span class="badge badge-bad">YES — collision found!</span>' : '<span class="badge badge-ok">No collision</span>'}</div>
+
+      <h3>SHA-256 (256 bits)</h3>
+      <div class="hash">Input 1: ${h1}</div>
+      <div class="hash">Input 2: ${h2}</div>
+      <div class="row">Collision: ${shaColl ? '<span class="badge badge-bad">YES — collision found!</span>' : '<span class="badge badge-ok">No collision — secure</span>'}</div>
+    </div>
+  `;
+}
+
+/* =====================================================================
+   TAB 3b - Known MD5 Collision Demo (red button)
+   Shows BOTH: user's typed inputs AND the built-in Wang et al. pair.
+   ===================================================================== */
+async function runKnownCollision(){
+  const s1 = document.getElementById('in4').value;
+  const s2 = document.getElementById('in5').value;
+  const out = document.getElementById('out3');
+
+  if (s1 === '' || s2 === '') {
+    out.innerHTML = '<div class="result danger"><span class="badge badge-bad">Please enter both inputs.</span></div>';
+    return;
+  }
+
+  showLoader(out, 'Running collision demos...');
+  await new Promise(r => setTimeout(r, 450));
+
+  /* -------- Part 1: user's inputs -------- */
+  const um1 = md5(s1), um2 = md5(s2);
+  const uh1 = await sha256(s1), uh2 = await sha256(s2);
+  const u_md5Coll = (um1 === um2);
+  const u_shaColl = (uh1 === uh2);
+
+  /* -------- Part 2: known Wang et al. collision pair -------- */
+  const hex1 =
+    "d131dd02c5e6eec4693d9a0698aff95c2fcab58712467eab4004583eb8fb7f89" +
+    "55ad340609f4b30283e488832571415a085125e8f7cdc99fd91dbdf280373c5b" +
+    "d8823e3156348f5bae6dacd436c919c6dd53e2b487da03fd02396306d248cda0" +
+    "e99f33420f577ee8ce54b67080a80d1ec69821bcb6a8839396f9652b6ff72a70";
+  const hex2 =
+    "d131dd02c5e6eec4693d9a0698aff95c2fcab50712467eab4004583eb8fb7f89" +
+    "55ad340609f4b30283e4888325f1415a085125e8f7cdc99fd91dbd7280373c5b" +
+    "d8823e3156348f5bae6dacd436c919c6dd53e23487da03fd02396306d248cda0" +
+    "e99f33420f577ee8ce54b67080280d1ec69821bcb6a8839396f965ab6ff72a70";
+
+  function hexToBytes(h){
+    const b = new Uint8Array(h.length / 2);
+    for (let i = 0; i < h.length; i += 2) b[i/2] = parseInt(h.substr(i, 2), 16);
+    return b;
+  }
+
+  function md5Bytes(byteArray){
+    function rotl(x,c){return (x<<c)|(x>>>(32-c));}
+    function add(a,b){return (a+b)|0;}
+    function toHex(w){
+      const h="0123456789abcdef";let o="";
+      for(let i=0;i<w.length*4;i++){
+        o+=h[(w[i>>2]>>((i%4)*8+4))&0xf];
+        o+=h[(w[i>>2]>>((i%4)*8))&0xf];
+      }
+      return o;
+    }
+    function cmn(q,a,b,x,s,t){a=add(add(a,q),add(x,t));return add(rotl(a,s),b);}
+    function ff(a,b,c,d,x,s,t){return cmn((b&c)|(~b&d),a,b,x,s,t);}
+    function gg(a,b,c,d,x,s,t){return cmn((b&d)|(c&~d),a,b,x,s,t);}
+    function hh(a,b,c,d,x,s,t){return cmn(b^c^d,a,b,x,s,t);}
+    function ii(a,b,c,d,x,s,t){return cmn(c^(b|~d),a,b,x,s,t);}
+    function cyc(x,k){
+      let a=x[0],b=x[1],c=x[2],d=x[3];
+      a=ff(a,b,c,d,k[0],7,-680876936);d=ff(d,a,b,c,k[1],12,-389564586);c=ff(c,d,a,b,k[2],17,606105819);b=ff(b,c,d,a,k[3],22,-1044525330);
+      a=ff(a,b,c,d,k[4],7,-176418897);d=ff(d,a,b,c,k[5],12,1200080426);c=ff(c,d,a,b,k[6],17,-1473231341);b=ff(b,c,d,a,k[7],22,-45705983);
+      a=ff(a,b,c,d,k[8],7,1770035416);d=ff(d,a,b,c,k[9],12,-1958414417);c=ff(c,d,a,b,k[10],17,-42063);b=ff(b,c,d,a,k[11],22,-1990404162);
+      a=ff(a,b,c,d,k[12],7,1804603682);d=ff(d,a,b,c,k[13],12,-40341101);c=ff(c,d,a,b,k[14],17,-1502002290);b=ff(b,c,d,a,k[15],22,1236535329);
+      a=gg(a,b,c,d,k[1],5,-165796510);d=gg(d,a,b,c,k[6],9,-1069501632);c=gg(c,d,a,b,k[11],14,643717713);b=gg(b,c,d,a,k[0],20,-373897302);
+      a=gg(a,b,c,d,k[5],5,-701558691);d=gg(d,a,b,c,k[10],9,38016083);c=gg(c,d,a,b,k[15],14,-660478335);b=gg(b,c,d,a,k[4],20,-405537848);
+      a=gg(a,b,c,d,k[9],5,568446438);d=gg(d,a,b,c,k[14],9,-1019803690);c=gg(c,d,a,b,k[3],14,-187363961);b=gg(b,c,d,a,k[8],20,1163531501);
+      a=gg(a,b,c,d,k[13],5,-1444681467);d=gg(d,a,b,c,k[2],9,-51403784);c=gg(c,d,a,b,k[7],14,1735328473);b=gg(b,c,d,a,k[12],20,-1926607734);
+      a=hh(a,b,c,d,k[5],4,-378558);d=hh(d,a,b,c,k[8],11,-2022574463);c=hh(c,d,a,b,k[11],16,1839030562);b=hh(b,c,d,a,k[14],23,-35309556);
+      a=hh(a,b,c,d,k[1],4,-1530992060);d=hh(d,a,b,c,k[4],11,1272893353);c=hh(c,d,a,b,k[7],16,-155497632);b=hh(b,c,d,a,k[10],23,-1094730640);
+      a=hh(a,b,c,d,k[13],4,681279174);d=hh(d,a,b,c,k[0],11,-358537222);c=hh(c,d,a,b,k[3],16,-722521979);b=hh(b,c,d,a,k[6],23,76029189);
+      a=hh(a,b,c,d,k[9],4,-640364487);d=hh(d,a,b,c,k[12],11,-421815835);c=hh(c,d,a,b,k[15],16,530742520);b=hh(b,c,d,a,k[2],23,-995338651);
+      a=ii(a,b,c,d,k[0],6,-198630844);d=ii(d,a,b,c,k[7],10,1126891415);c=ii(c,d,a,b,k[14],15,-1416354905);b=ii(b,c,d,a,k[5],21,-57434055);
+      a=ii(a,b,c,d,k[12],6,1700485571);d=ii(d,a,b,c,k[3],10,-1894986606);c=ii(c,d,a,b,k[10],15,-1051523);b=ii(b,c,d,a,k[1],21,-2054922799);
+      a=ii(a,b,c,d,k[8],6,1873313359);d=ii(d,a,b,c,k[15],10,-30611744);c=ii(c,d,a,b,k[6],15,-1560198380);b=ii(b,c,d,a,k[13],21,1309151649);
+      a=ii(a,b,c,d,k[4],6,-145523070);d=ii(d,a,b,c,k[11],10,-1120210379);c=ii(c,d,a,b,k[2],15,718787259);b=ii(b,c,d,a,k[9],21,-343485551);
+      x[0]=add(a,x[0]);x[1]=add(b,x[1]);x[2]=add(c,x[2]);x[3]=add(d,x[3]);
+    }
+    function blk(b){const r=[];for(let i=0;i<64;i+=4)r[i>>2]=b[i]+(b[i+1]<<8)+(b[i+2]<<16)+(b[i+3]<<24);return r;}
+    const bytes = Array.from(byteArray);
+    const n = bytes.length;
+    const s = [1732584193,-271733879,-1732584194,271733878];
+    let i;
+    for (i = 64; i <= n; i += 64) cyc(s, blk(bytes.slice(i-64, i)));
+    const tail = new Array(16).fill(0);
+    const rest = bytes.slice(i-64);
+    for (let j = 0; j < rest.length; j++) tail[j>>2] |= rest[j] << ((j%4)*8);
+    tail[rest.length>>2] |= 0x80 << ((rest.length%4)*8);
+    if (rest.length > 55) { cyc(s, tail); for (let j = 0; j < 16; j++) tail[j] = 0; }
+    tail[14] = n * 8; cyc(s, tail);
+    return toHex(s);
+  }
+
+  const b1 = hexToBytes(hex1), b2 = hexToBytes(hex2);
+  const km1 = md5Bytes(b1), km2 = md5Bytes(b2);
+
+  const kbuf1 = await crypto.subtle.digest('SHA-256', b1);
+  const kbuf2 = await crypto.subtle.digest('SHA-256', b2);
+  const ks1 = [...new Uint8Array(kbuf1)].map(x => x.toString(16).padStart(2,'0')).join('');
+  const ks2 = [...new Uint8Array(kbuf2)].map(x => x.toString(16).padStart(2,'0')).join('');
+
+  const k_md5Coll = (km1 === km2);
+  const k_shaColl = (ks1 === ks2);
+
+  out.innerHTML = `
+    <div class="result">
+      <h3>Part 1 — Your Inputs</h3>
+      <div class="row"><b>Input 1:</b> ${esc(s1)}</div>
+      <div class="row"><b>Input 2:</b> ${esc(s2)}</div>
+      <div class="row"><b>Inputs are DIFFERENT:</b> ${s1 !== s2}</div>
+
+      <h3>MD5 (128 bits)</h3>
+      <div class="hash">Input 1: ${um1}</div>
+      <div class="hash">Input 2: ${um2}</div>
+      <div class="row">Collision: ${u_md5Coll ? '<span class="badge badge-bad">YES — BROKEN!</span>' : '<span class="badge badge-ok">No collision</span>'}</div>
+
+      <h3>SHA-256 (256 bits)</h3>
+      <div class="hash">Input 1: ${uh1}</div>
+      <div class="hash">Input 2: ${uh2}</div>
+      <div class="row">Collision: ${u_shaColl ? '<span class="badge badge-bad">YES — BROKEN</span>' : '<span class="badge badge-ok">No collision — secure</span>'}</div>
+
+      <h3 style="margin-top:26px;">Part 2 — Known MD5 Collision (Wang et al. 2004)</h3>
+      <div class="row"><b>Inputs are DIFFERENT:</b> true</div>
+
+      <h3>MD5</h3>
+      <div class="hash">Input 1: ${km1}</div>
+      <div class="hash">Input 2: ${km2}</div>
+      <div class="row">Collision: ${k_md5Coll ? '<span class="badge badge-bad">YES — BROKEN!</span>' : '<span class="badge badge-ok">No</span>'}</div>
+
+      <h3>SHA-256</h3>
+      <div class="hash">Input 1: ${ks1}</div>
+      <div class="hash">Input 2: ${ks2}</div>
+      <div class="row">Collision: ${k_shaColl ? '<span class="badge badge-bad">YES — BROKEN</span>' : '<span class="badge badge-ok">No — still secure</span>'}</div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
